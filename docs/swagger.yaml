@@ -1,0 +1,325 @@
+basePath: /v1
+definitions:
+  enums.Role:
+    enum:
+    - 1
+    - 2
+    - 3
+    type: integer
+    x-enum-varnames:
+    - Admin
+    - Teacher
+    - Student
+  main.RegisterUserPayload:
+    properties:
+      email:
+        maxLength: 255
+        type: string
+      password:
+        maxLength: 72
+        minLength: 3
+        type: string
+      role:
+        $ref: '#/definitions/enums.Role'
+      username:
+        maxLength: 100
+        type: string
+    required:
+    - email
+    - password
+    - role
+    - username
+    type: object
+  main.UserWithToken:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      role:
+        $ref: '#/definitions/enums.Role'
+      token:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+      version:
+        type: integer
+    type: object
+  store.Profile:
+    properties:
+      created_at:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      identification:
+        type: string
+      last_name:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  store.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      role:
+        $ref: '#/definitions/enums.Role'
+      updated_at:
+        type: string
+      username:
+        type: string
+      version:
+        type: integer
+    type: object
+host: petstore.swagger.io
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: API for TeacherApp, an app for teachers
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: TeacherAPP API
+  version: "1.0"
+paths:
+  /authentication/register:
+    post:
+      consumes:
+      - application/json
+      description: Register an user
+      parameters:
+      - description: User Credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.RegisterUserPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User registered
+          schema:
+            $ref: '#/definitions/main.UserWithToken'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Register an user
+      tags:
+      - Authentication
+  /profiles/{ID}:
+    get:
+      consumes:
+      - application/json
+      description: Fetches an user profile by ID
+      parameters:
+      - description: Profile ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.Profile'
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Fetches an user profile
+      tags:
+      - Profiles
+    patch:
+      consumes:
+      - application/json
+      description: Update an user profile
+      parameters:
+      - description: User ID
+        in: path
+        name: ID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: User's Profile updated successfully
+        "400":
+          description: user's profile not found
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Update an user profile
+      tags:
+      - Profiles
+  /users/{userID}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an user profile
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: User deleted successfully
+        "400":
+          description: user not found
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Delete an user profile
+      tags:
+      - Users
+    get:
+      consumes:
+      - application/json
+      description: Fetches an user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.User'
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Fetches an user
+      tags:
+      - Users
+    patch:
+      consumes:
+      - application/json
+      description: Update an user
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: User updated successfully
+        "400":
+          description: user not found
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Update an user
+      tags:
+      - Users
+  /users/activate/{token}:
+    put:
+      consumes:
+      - application/json
+      description: Activates an user by an invitation token
+      parameters:
+      - description: Invitation token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: User activated
+        "404":
+          description: user not found
+          schema: {}
+        "500":
+          description: internal error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Activates an user
+      tags:
+      - Users
+  /users/getAll:
+    get:
+      consumes:
+      - application/json
+      description: Gets all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of users
+          schema:
+            items:
+              $ref: '#/definitions/store.User'
+            type: array
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Gets all users
+      tags:
+      - Users
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

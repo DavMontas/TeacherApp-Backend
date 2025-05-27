@@ -66,7 +66,262 @@ const docTemplate = `{
                 }
             }
         },
-        "/profiles/{ID}": {
+        "/bank-accounts": {
+            "post": {
+                "description": "Register an user's bankaccount",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "BankAccount"
+                ],
+                "summary": "Register an user's bankaccount",
+                "parameters": [
+                    {
+                        "description": "BankAccount info",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.CreateBankAccounts"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/bank-accounts/getUserCards/{ID}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Gets all BankAccount",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "BankAccount"
+                ],
+                "summary": "Gets all BankAccount from an user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User's profile ID",
+                        "name": "ID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of user's BankAccount",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/store.BankAccount"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/bank-accounts/{ID}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Fetches a BankAccount",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "BankAccount"
+                ],
+                "summary": "Fetches a BankAccount",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "BankAccount ID",
+                        "name": "ID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/store.BankAccount"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete a BankAccount record",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "BankAccount"
+                ],
+                "summary": "Delete a  record",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "BankAccount ID",
+                        "name": "ID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "BankAccount record deleted successfully"
+                    },
+                    "400": {
+                        "description": "record not found",
+                        "schema": {}
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update a BankAccount record",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "BankAccount"
+                ],
+                "summary": "Update a BankAccount record",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "BankAccount ID",
+                        "name": "ID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "BankAccount updated successfully"
+                    },
+                    "400": {
+                        "description": "BankAccount record not found",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/user-profiles/get-all": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get profiles",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profiles"
+                ],
+                "summary": "List profiles",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/store.UserProfileDTO"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/user-profiles/{id}": {
             "get": {
                 "security": [
                     {
@@ -97,7 +352,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/store.Profile"
+                            "$ref": "#/definitions/store.UserProfileDTO"
                         }
                     },
                     "400": {
@@ -135,9 +390,18 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "User ID",
-                        "name": "ID",
+                        "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "User Credentials",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.UpdateUserProfilePayload"
+                        }
                     }
                 ],
                 "responses": {
@@ -236,7 +500,56 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/{userID}": {
+        "/users/withprofile/{ID}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Fetches an user with it's profile data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Fetches an user's profile",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "ID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/store.UserWithProfile"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/users/{ID}": {
             "get": {
                 "security": [
                     {
@@ -258,7 +571,7 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "User ID",
-                        "name": "id",
+                        "name": "ID",
                         "in": "path",
                         "required": true
                     }
@@ -305,7 +618,7 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "User ID",
-                        "name": "userID",
+                        "name": "ID",
                         "in": "path",
                         "required": true
                     }
@@ -341,7 +654,7 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "User ID",
-                        "name": "userID",
+                        "name": "ID",
                         "in": "path",
                         "required": true
                     }
@@ -372,6 +685,27 @@ const docTemplate = `{
                 "Student"
             ]
         },
+        "main.CreateBankAccounts": {
+            "type": "object",
+            "required": [
+                "bank_account_number",
+                "bank_name",
+                "user_profile_id"
+            ],
+            "properties": {
+                "bank_account_number": {
+                    "type": "string",
+                    "maxLength": 40
+                },
+                "bank_name": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "user_profile_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "main.RegisterUserPayload": {
             "type": "object",
             "required": [
@@ -396,6 +730,23 @@ const docTemplate = `{
                 "username": {
                     "type": "string",
                     "maxLength": 100
+                }
+            }
+        },
+        "main.UpdateUserProfilePayload": {
+            "type": "object",
+            "properties": {
+                "first_name": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "identification": {
+                    "type": "string",
+                    "maxLength": 11
+                },
+                "last_name": {
+                    "type": "string",
+                    "maxLength": 50
                 }
             }
         },
@@ -431,28 +782,22 @@ const docTemplate = `{
                 }
             }
         },
-        "store.Profile": {
+        "store.BankAccount": {
             "type": "object",
             "properties": {
-                "created_at": {
+                "bank_account_number": {
                     "type": "string"
                 },
-                "first_name": {
+                "bank_name": {
+                    "type": "string"
+                },
+                "created_at": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
                 },
-                "identification": {
-                    "type": "string"
-                },
-                "last_name": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "user_id": {
+                "user_profile_id": {
                     "type": "integer"
                 }
             }
@@ -483,6 +828,61 @@ const docTemplate = `{
                 },
                 "version": {
                     "type": "integer"
+                }
+            }
+        },
+        "store.UserProfileDTO": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "identification": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "store.UserWithProfile": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "role": {
+                    "$ref": "#/definitions/enums.Role"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         }

@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"errors"
-	"log"
 	"net/http"
 
 	"github.com/davmontas/teacherapp/internal/store"
@@ -27,35 +26,6 @@ type UpdateUserPayload struct {
 	Role     *enums.Role `json:"role" validate:"omitempty"`
 }
 
-// GetUser godoc
-//
-//	@Summary		Fetches an user
-//	@Description	Fetches an user by ID
-//	@Tags			Users
-//	@Accept			json
-//	@Produce		json
-//	@Param			id	path		int	true	"User ID"
-//	@Success		200	{object}	store.User
-//	@Failure		400	{object}	error
-//	@Failure		404	{object}	error
-//	@Failure		500	{object}	error
-//	@Security		ApiKeyAuth
-//	@Router			/users/{userID}	[get]
-func (app *application) getUserHandler(w http.ResponseWriter, r *http.Request) {
-	user := GetEntityFromContext[*store.User](r, userKey)
-
-	if err := app.jsonResponse(w, http.StatusOK, user); err != nil {
-		switch {
-		case errors.Is(err, sql.ErrNoRows):
-			app.notFoundResponse(w, r, err)
-		default:
-			app.internalServerResponse(w, r, err)
-		}
-
-		return
-	}
-}
-
 // GetAll User godoc
 //
 //	@Summary		Gets all users
@@ -75,8 +45,6 @@ func (app *application) getAllUserHandler(w http.ResponseWriter, r *http.Request
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
 			app.notFoundResponse(w, r, err)
-		case len(users) == 0:
-			log.Printf("Eta vaina ta' vacia")
 		default:
 			app.internalServerResponse(w, r, err)
 		}
@@ -87,6 +55,65 @@ func (app *application) getAllUserHandler(w http.ResponseWriter, r *http.Request
 	app.jsonResponse(w, http.StatusOK, users)
 }
 
+// GetUser godoc
+//
+//	@Summary		Fetches an user
+//	@Description	Fetches an user by ID
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			ID	path		int	true	"User ID"
+//	@Success		200	{object}	store.User
+//	@Failure		400	{object}	error
+//	@Failure		404	{object}	error
+//	@Failure		500	{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/users/{ID}	[get]
+func (app *application) getUserHandler(w http.ResponseWriter, r *http.Request) {
+	user := GetEntityFromContext[*store.User](r, userKEY)
+
+	if err := app.jsonResponse(w, http.StatusOK, user); err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			app.notFoundResponse(w, r, err)
+		default:
+			app.internalServerResponse(w, r, err)
+		}
+
+		return
+	}
+}
+
+// GetUserWithProfile godoc
+//
+//	@Summary		Fetches an user's profile
+//	@Description	Fetches an user with it's profile data
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			ID	path		int	true	"User ID"
+//	@Success		200	{object}	store.UserWithProfile
+//	@Failure		400	{object}	error
+//	@Failure		404	{object}	error
+//	@Failure		500	{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/users/withprofile/{ID}	[get]
+func (app *application) getUserWithProfileHandler(w http.ResponseWriter, r *http.Request) {
+	_ = EntityContextMiddleware(app, userKEY, "userID", app.store.Users.GetByIDWithProfile)
+	user := GetEntityFromContext[*store.UserWithProfile](r, userKEY)
+
+	if err := app.jsonResponse(w, http.StatusOK, user); err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			app.notFoundResponse(w, r, err)
+		default:
+			app.internalServerResponse(w, r, err)
+		}
+
+		return
+	}
+}
+
 // DeleteUser godoc
 //
 //	@Summary		Delete an user profile
@@ -94,13 +121,13 @@ func (app *application) getAllUserHandler(w http.ResponseWriter, r *http.Request
 //	@Tags			Users
 //	@Accept			json
 //	@Produce		json
-//	@Param			userID	path	int	true	"User ID"
-//	@Success		204		"User deleted successfully"
-//	@Failure		400		{object}	error	"user not found"
+//	@Param			ID	path	int	true	"User ID"
+//	@Success		204	"User deleted successfully"
+//	@Failure		400	{object}	error	"user not found"
 //	@Security		ApiKeyAuth
-//	@Router			/users/{userID}	[delete]
+//	@Router			/users/{ID}	[delete]
 func (app *application) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
-	user := GetEntityFromContext[*store.User](r, userKey)
+	user := GetEntityFromContext[*store.User](r, userKEY)
 
 	ctx := r.Context()
 
@@ -125,13 +152,13 @@ func (app *application) deleteUserHandler(w http.ResponseWriter, r *http.Request
 //	@Tags			Users
 //	@Accept			json
 //	@Produce		json
-//	@Param			userID	path	int	true	"User ID"
-//	@Success		204		"User updated successfully"
-//	@Failure		400		{object}	error	"user not found"
+//	@Param			ID	path	int	true	"User ID"
+//	@Success		204	"User updated successfully"
+//	@Failure		400	{object}	error	"user not found"
 //	@Security		ApiKeyAuth
-//	@Router			/users/{userID}	[patch]
+//	@Router			/users/{ID}	[patch]
 func (app *application) updateUserHandler(w http.ResponseWriter, r *http.Request) {
-	user := GetEntityFromContext[*store.User](r, userKey)
+	user := GetEntityFromContext[*store.User](r, userKEY)
 
 	var payload UpdateUserPayload
 	if err := readJSON(w, r, &payload); err != nil {

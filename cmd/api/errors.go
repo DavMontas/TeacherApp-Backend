@@ -19,7 +19,7 @@ func (app *application) badRequestResponse(w http.ResponseWriter, r *http.Reques
 func (app *application) notFoundResponse(w http.ResponseWriter, r *http.Request, err error) {
 	app.logger.Errorw("not found error", "method", r.Method, "path", r.URL.Path)
 
-	writeJSONError(w, http.StatusNotFound, "not found")
+	writeJSONError(w, http.StatusNotFound, "record not found")
 }
 
 // func (app *application) conflictResponse(w http.ResponseWriter, r *http.Request, err error) {

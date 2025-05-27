@@ -11,8 +11,9 @@ import (
 )
 
 const (
-	userKey    string = "user"
-	profileKey string = "profile"
+	userKEY        string = "user"
+	userProfileKEY string = "profile"
+	bankAccountKEY string = "bank_account"
 )
 
 func EntityContextMiddleware[T any](

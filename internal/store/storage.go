@@ -20,18 +20,29 @@ type Storage struct {
 		GetByID(context.Context, int64) (*User, error)
 		Delete(context.Context, int64) error
 		Activate(context.Context, string) error
+		GetByIDWithProfile(context.Context, int64) (*UserWithProfile, error)
 	}
 
-	Profiles interface {
-		GetByID(context.Context, int64) (*Profile, error)
-		Update(ctx context.Context, profile *Profile) error
+	UserProfiles interface {
+		GetByID(context.Context, int64) (*UserProfile, error)
+		Update(context.Context, *UserProfile) error
+		GetAll(context.Context) ([]*UserProfile, error)
+	}
+
+	BankAccount interface {
+		Create(context.Context, *BankAccount) error
+		GetByID(context.Context, int64) (*BankAccount, error)
+		Update(context.Context, *BankAccount) error
+		Delete(context.Context, int64) error
+		GetUserCards(context.Context, int64) ([]*BankAccount, error)
 	}
 }
 
 func NewStorage(db *sql.DB) Storage {
 	return Storage{
-		Users:    &UsersStore{db},
-		Profiles: &ProfilesStore{db},
+		Users:        &UsersStore{db},
+		UserProfiles: &UserProfilesStore{db},
+		BankAccount:  &BankAccountsStore{db},
 	}
 }
 

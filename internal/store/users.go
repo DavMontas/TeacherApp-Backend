@@ -6,11 +6,9 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"errors"
-	"log"
 	"time"
 
 	"github.com/davmontas/teacherapp/internal/store/enums"
-	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -31,6 +29,19 @@ type User struct {
 	Version   int        `json:"version"`
 }
 
+type UserWithProfile struct {
+	ID        int64      `json:"id" `
+	Username  string     `json:"username"`
+	Email     string     `json:"email"`
+	Password  password   `json:"-"`
+	Role      enums.Role `json:"role"`
+	FirstName string     `json:"first_name"`
+	LastName  string     `json:"last_name"`
+	UserID    int64      `json:"user_id"`
+	CreatedAt string     `json:"created_at"`
+	IsActive  bool       `json:"is_active"`
+}
+
 type password struct {
 	text *string
 	hash []byte
@@ -48,8 +59,6 @@ func (p *password) Set(text string) error {
 	}
 
 	p.text = &text
-	var test = &p.text
-	log.Println(test, p.text)
 	p.hash = hash
 
 	return nil
@@ -57,22 +66,36 @@ func (p *password) Set(text string) error {
 
 func (s *UsersStore) GetAll(ctx context.Context) ([]*User, error) {
 	query := `
-	SELECT id, username, email, role, created_at, version
+	SELECT id, username, email, role, created_at, is_active
 	FROM users
 	`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
 
-	var users []*User
-	err := s.db.QueryRowContext(
-		ctx,
-		query,
-	).Scan(
-		pq.Array(users),
-	)
-
+	rows, err := s.db.QueryContext(ctx, query)
 	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	var users []*User
+	for rows.Next() {
+		var u User
+		if err := rows.Scan(
+			&u.ID,
+			&u.Username,
+			&u.Email,
+			&u.Role,
+			&u.CreatedAt,
+			&u.IsActive,
+		); err != nil {
+			return nil, err
+		}
+		users = append(users, &u)
+	}
+
+	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
@@ -133,6 +156,54 @@ func (s *UsersStore) CreateAndInvite(ctx context.Context, user *User, token stri
 
 		return nil
 	})
+}
+
+func (s *UsersStore) GetByIDWithProfile(ctx context.Context, id int64) (*UserWithProfile, error) {
+	query := `
+		SELECT 
+			u.id, 
+			u.username, 
+			u.email, 
+			u.role, 
+			u.created_at, 
+			u.is_active, 
+			up.id, 
+			up.first_name, 
+			up.last_name
+		FROM users u
+		LEFT JOIN user_profiles up ON u.id = up.user_id
+		WHERE u.id = $1
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	var user UserWithProfile
+
+	err := s.db.QueryRowContext(
+		ctx,
+		query,
+		id).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Email,
+		&user.Role,
+		&user.CreatedAt,
+		&user.IsActive,
+		&user.UserID,
+		&user.FirstName,
+		&user.LastName,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, err
+		}
+
+		return nil, err
+	}
+
+	return &user, nil
 }
 
 func (s *UsersStore) GetByID(ctx context.Context, id int64) (*User, error) {
@@ -342,18 +413,13 @@ func (*UsersStore) deleteUserInvitation(ctx context.Context, tx *sql.Tx, userID 
 
 func (s *UsersStore) createUserProfile(ctx context.Context, tx *sql.Tx, userID int64) error {
 	query := `
-	INSERT INTO profiles (user_id)
+	INSERT INTO user_profiles (user_id)
 	VALUES ($1)
 	`
-
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
 
-	_, err := tx.ExecContext(
-		ctx,
-		query,
-		userID,
-	)
+	_, err := tx.ExecContext(ctx, query, userID)
 
 	if err != nil {
 		return err
@@ -364,7 +430,7 @@ func (s *UsersStore) createUserProfile(ctx context.Context, tx *sql.Tx, userID i
 
 func (s *UsersStore) deleteUserProfile(ctx context.Context, tx *sql.Tx, id int64) error {
 	query := `
-		DELETE FROM profiles
+		DELETE FROM user_profiles
 		WHERE user_id = $1
 	`
 

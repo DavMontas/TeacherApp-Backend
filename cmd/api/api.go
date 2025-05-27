@@ -72,16 +72,16 @@ func (app *application) mount() http.Handler {
 			r.Get("/getAll", app.getAllUserHandler)
 			r.Put("/activate/{token}", app.activateUserHandler)
 
-			r.Route("/{userID}", func(r chi.Router) {
+			r.Get("/withprofile/{ID}", app.getUserWithProfileHandler)
+			r.Route("/{ID}", func(r chi.Router) {
 				r.Use(EntityContextMiddleware(
 					app,
-					userKey,
-					"userID",
+					userKEY,
+					"ID",
 					app.store.Users.GetByID,
 				))
 
 				r.Get("/", app.getUserHandler)
-
 				r.Delete("/", app.deleteUserHandler)
 				r.Patch("/", app.updateUserHandler)
 			})
@@ -93,17 +93,45 @@ func (app *application) mount() http.Handler {
 		})
 
 		r.Route("/user-profiles", func(r chi.Router) {
+			r.Get("/get-all", app.getAllProfileHandler)
+			r.Route("/{id}", func(r chi.Router) {
+				r.Use(EntityContextMiddleware(
+					app,
+					userProfileKEY,
+					"id",
+					app.store.UserProfiles.GetByID,
+				))
 
+				r.Get("/", app.getProfileHandler)
+				r.Patch("/", app.updateProfileHandler)
+			})
+
+		})
+
+		r.Route("/bank-accounts", func(r chi.Router) {
+			r.Route("/getUserCards/{ID}", func(r chi.Router) {
+				r.Use(EntityContextMiddleware(
+					app,
+					userProfileKEY,
+					"ID",
+					app.store.UserProfiles.GetByID,
+				))
+				r.Get("/", app.getUserCardsHandler)
+
+			})
+
+			r.Post("/", app.createBankAccountHandler)
 			r.Route("/{ID}", func(r chi.Router) {
 				r.Use(EntityContextMiddleware(
 					app,
-					userKey,
+					bankAccountKEY,
 					"ID",
-					app.store.Profiles.GetByID,
+					app.store.BankAccount.GetByID,
 				))
 
-				r.Get("/", app.getProfilesHandler)
-				r.Patch("/", app.updateProfilesHandler)
+				r.Get("/", app.getBankAccountHandler)
+				r.Patch("/", app.updateBankAccountHandler)
+				r.Delete("/", app.deleteBankAccountHandler)
 			})
 		})
 	})
